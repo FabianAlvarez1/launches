@@ -1,0 +1,70 @@
+/*======================================== HIDE SCROLL */
+* {
+    flex: 0 0 auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+/*======================================== CLASS STYLES */
+
+html,
+body {
+    display: initial;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+#main {
+    width: 100vw;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    display: flex;
+    color: #FFF;
+}
+#landing nav {
+    height: 3.125rem;
+}
+#results_section {
+    margin-top: 3.125rem;
+    min-height: calc(100vh - 3.125rem);
+}
+#results {
+    display: flex;
+    justify-content: center;
+}
+
+.launch_card {
+    width: 60vw;
+    height: 60vh;
+    background-color: rgba(30, 30, 30, .5);
+}
+
+.truncate {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*======================================== PLANET */
+
+canvas {
+    display: initial;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -100;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+}
