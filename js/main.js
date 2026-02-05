@@ -14,10 +14,10 @@ const main = {
         main.setHorizontalScroll(CONTAINER, SCROLL);
         main.createPlanetAnimation(CONTAINER, SCROLL);
 
+        if (main.isTouchDevice) return;
+
         main.updateClock();
         setInterval(main.updateClock, 1000);
-
-        if (main.isTouchDevice) return;
 
         main.getUpcomingLaunches();
     },
@@ -152,10 +152,9 @@ const main = {
             document.querySelector('#main').innerHTML = `
                 <div style="width:100vw;height:100vh;display:flex;flex-direction: column;align-items: center;justify-content: center;">
                     <h1>Disponible solo en PC</h1>
-                    <p>Este sitio no está optimizado para dispositivos móviles.</p>
+                    <p class="text-center text-wrap">Este sitio no está optimizado para dispositivos móviles.</p>
                 </div>
             `;
-            
         }
 
         window.addEventListener('resize', () => {
@@ -217,8 +216,7 @@ const main = {
         const MINUTES = String(NOW.getMinutes()).padStart(2, '0');
         const SECONDS = String(NOW.getSeconds()).padStart(2, '0');
 
-        document.getElementById('clock').textContent =
-        `${HOURS}:${MINUTES}:${SECONDS}`;
+        document.getElementById('clock').textContent = `${HOURS}:${MINUTES}:${SECONDS}`;
     },
 
     // =================================== CONSUME SERVICES
