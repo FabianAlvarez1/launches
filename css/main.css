@@ -1,3 +1,9 @@
+/*======================================== CONSTS */
+
+:root {
+    --nav-height: 3.75rem;
+}
+
 /*======================================== HIDE SCROLL */
 * {
     flex: 0 0 auto;
@@ -31,15 +37,14 @@ body {
     color: #FFF;
 }
 #landing nav {
-    height: 3.125rem;
+    height: var(--nav-height);
 }
 #results_section {
-    margin-top: 3.125rem;
-    min-height: calc(100vh - 3.125rem);
+    margin-top: var(--nav-height);
+    min-height: calc(100vh - var(--nav-height));
 }
 #results {
-    display: flex;
-    justify-content: center;
+    height: 90%;
 }
 
 .launch_card {

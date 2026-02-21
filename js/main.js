@@ -32,12 +32,13 @@ const main = {
 
             SCROLL.targetScroll = THREE.MathUtils.clamp(SCROLL.targetScroll, 0, SCROLL.max);
         }, { passive: false });
-        
-        window.addEventListener('scroll', () => {
-            const PROGRESS = window.scrollY / (document.body.scrollHeight - innerHeight);
-            const x = PROGRESS * (window.innerWidth * 2);
-
-            CONTAINER.style.transform = `translateX(${-x}px)`;
+        window.addEventListener('hashchange', () => { 
+            gsap.to(SCROLL, { 
+                targetScroll: document.querySelector(location.hash).offsetLeft, 
+                duration: 2, 
+                ease: "power2.out"
+            });
+            location.hash = "";
         });
     },
     createPlanetAnimation(CONTAINER, SCROLL) {
@@ -303,7 +304,7 @@ const main = {
 
         RESULTS.forEach(result => {
             htmlTemplate += `
-                <div class="launch_card rounded-xl grid grid-cols-6">
+                <div class="launch_card rounded-xl overflow-hidden grid grid-cols-6">
                     <div class="col-span-2">
                         <img class="w-full h-full object-cover" src="${ result?.image?.image_url ?? ''}" loading="lazy" alt="${result?.image?.name ?? 'image' }">
                     </div>
