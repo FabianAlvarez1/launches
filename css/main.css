@@ -104,7 +104,6 @@ canvas {
 
 .clock_colon {
 	transition: transform 500ms;
-	transform: translateY(calc(1vh - (var(--font-clock-size)/2) ));
 	
 	&:after {
 		content: ':';
