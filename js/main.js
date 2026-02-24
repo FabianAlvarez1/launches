@@ -17,7 +17,6 @@ const main = {
         if (main.isTouchDevice) return;
 
         main.updateClock();
-        setInterval(main.updateClock, 1000);
 
         main.getUpcomingLaunches();
     },
@@ -211,13 +210,42 @@ const main = {
         animate();
     },
     updateClock() {
-        const NOW = new Date();
+        const root = document.querySelector('#clock_container');
+        let size = parseFloat(getComputedStyle(root).fontSize);
+        let columns = Array.from(document.querySelectorAll('.clock_column'));
+        let d, c;
+        let classList = [ 'visible', 'close'];
 
-        const HOURS = String(NOW.getHours()).padStart(2, '0');
-        const MINUTES = String(NOW.getMinutes()).padStart(2, '0');
-        const SECONDS = String(NOW.getSeconds()).padStart(2, '0');
+        const padClock = (p, n) => {
+            return p + ('0' + n).slice(-2);
+        }
 
-        document.getElementById('clock').textContent = `${HOURS}:${MINUTES}:${SECONDS}`;
+        const getClock = () => {
+            d = new Date();
+            return [
+                    d.getHours(),
+                    d.getMinutes(),
+                    d.getSeconds()
+                ]
+                .reduce(padClock, '');
+        }
+
+        const getClass = (n, i2) => {
+            return classList.find((class_, classIndex) => Math.abs(n - i2) === classIndex) || '';
+        }
+
+        let loop = setInterval(() => {
+            c = getClock();
+
+            columns.forEach((ele, i) => {
+                let n = +c[i];
+                let offset = -n * size;
+                ele.style.transform = `translateY(${offset}px)`;
+                Array.from(ele.children).forEach((ele2, i2) => {
+                    ele2.className = 'clock_num ' + getClass(n, i2);
+                });
+            });
+        }, 1000);
     },
 
     // =================================== CONSUME SERVICES

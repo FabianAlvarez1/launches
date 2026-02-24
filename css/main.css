@@ -73,3 +73,51 @@ canvas {
     height: 100vh;
     background-color: black;
 }
+
+
+/*======================================== CLOCK STYLE */
+
+
+:root{
+    --font-clock-size: 0.875rem;
+}
+
+#clock_container{
+    height: calc(var(--font-clock-size));
+    overflow: hidden;
+    font-size: 0.875rem;
+}
+
+.clock_column,
+.clock_colon {
+	display: inline-block;
+	vertical-align: top;
+	font-size: var(--font-clock-size);
+	line-height: var(--font-clock-size);
+    margin: 0;
+    padding: 0;
+}
+
+.clock_column {
+	transition: transform 500ms;
+}
+
+.clock_colon {
+	transition: transform 500ms;
+	transform: translateY(calc(1vh - (var(--font-clock-size)/2) ));
+	
+	&:after {
+		content: ':';
+	}
+}
+
+.clock_num {
+	transition: opacity 500ms;
+    opacity: 0;
+    margin: 0;
+	
+	&.visible {
+		opacity: 1;
+        padding: 0;
+	}
+}

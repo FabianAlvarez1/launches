@@ -18,28 +18,87 @@
                 <div>
                     <img src="resources/images/launches_logo.png" alt="logo" class="h-6 w-auto object-contain">
                 </div>
-                <div class="flex flex-wrap items-center">
-                    <div class="py-1 px-4 flex gap-1 mb:gap-2">
-                        <small class="text-slate-200">Time:</small>
-                        <div id="clock" class="text-sm tracking-wide text-slate-200">
-                            00:00:00 am
+                <div class="flex flex-wrap items-center text-sm">
+                    <div class="py-1 px-4 flex gap-1 mb:gap-2 items-center">
+                        <span class="text-slate-200">T-</span>
+                        <div id="clock_container" class="">
+                            <div class="clock_column">
+                                <div class="clock_num">0</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">2</div>
+                            </div>
+                            <div class="clock_column">
+                                <div class="clock_num">0</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">5</div>
+                                <div class="clock_num">6</div>
+                                <div class="clock_num">7</div>
+                                <div class="clock_num">8</div>
+                                <div class="clock_num">9</div>
+                            </div>
+                            <div class="clock_colon"></div>
+                            <div class="clock_column">
+                                <div class="clock_num">0</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">5</div>
+                            </div>
+                            <div class="clock_column">
+                                <div class="clock_num">0</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">5</div>
+                                <div class="clock_num">6</div>
+                                <div class="clock_num">7</div>
+                                <div class="clock_num">8</div>
+                                <div class="clock_num">9</div>
+                            </div>
+                            <div class="clock_colon"></div>
+                            <div class="clock_column">
+                                <div class="clock_num">0</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">5</div>
+                            </div>
+                            <div class="clock_column">
+                                <div class="clock_num">0</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">5</div>
+                                <div class="clock_num">6</div>
+                                <div class="clock_num">7</div>
+                                <div class="clock_num">8</div>
+                                <div class="clock_num">9</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="py-1 px-4 flex gap-1 mb:gap-2">
-                        <small class="text-slate-200">Next launch:</small>
-                        <div id="clock" class="text-sm tracking-wide text-slate-600">
+                    
+                    <div class="py-1 px-4 flex gap-1 mb:gap-2 items-center">
+                        <span class="text-slate-200">Next launch:</span>
+                        <span class="tracking-wide text-slate-600">
                             00d 00h 00m 00s 
-                        </div>
+                        </span>
                     </div>
-                    <div class="py-1 px-4 flex gap-1 mb:gap-2">
-                        <small class="text-slate-200">Status:</small>
-                        <div id="clock" class="text-sm tracking-wide text-slate-600">
+                    <div class="py-1 px-4 flex gap-1 mb:gap-2 items-center">
+                        <span class="text-slate-200">Status:</span>
+                        <span class="tracking-wide text-slate-600">
                             STANDBY
-                        </div>
+                        </span>
                     </div>
-                    <div class="py-1 px-4 flex gap-1 mb:gap-2">
-                        <small class="text-slate-200">Last launch:</small>
-                        <div id="clock" class="text-sm tracking-wide text-slate-600">
+                    <div class="py-1 px-4 flex gap-1 mb:gap-2 items-center">
+                        <span class="text-slate-200">Last launch:</span>
+                        <div class="tracking-wide text-slate-600">
                             <span class="text-slate-600">unknown</span>
                             <span> | </span>
                             <span class="text-green-600">Success</span>
