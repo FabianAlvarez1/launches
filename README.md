@@ -6,6 +6,8 @@ Instead of focusing on raw data, the project aims to provide an immersive, smoot
 
 The interface combines horizontal scrolling, real-time data, and 3D visualization to transform how launch information is consumed.
 
+[Click here to try it!](https://fabianalvarez1.github.io/launches/)
+
 ---
 
 ## ✨ Features
