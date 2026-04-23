@@ -1,7 +1,17 @@
 const main = {
     isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
     cacheKey: 'upcoming_launches',
-    cacheTime: (10 * 1000 * 60),
+    cacheTime: (30 * 1000 * 60),
+
+    state: {
+        limit: 10,
+        nextUrl: null,
+        prevUrl: null,
+        count: 0,
+        currentTab: 'upcoming',
+        clockTz: 'LOCAL',
+        nextLaunchInterval: null
+    },
 
     init() {
         const CONTAINER = document.querySelector('#main');
@@ -13,12 +23,18 @@ const main = {
 
         main.setHorizontalScroll(CONTAINER, SCROLL);
         main.createPlanetAnimation(CONTAINER, SCROLL);
+        main.initSidebarEvents();
+
+        document.querySelector('#btn-clock-tz')?.addEventListener('click', (e) => {
+            main.state.clockTz = main.state.clockTz === 'LOCAL' ? 'UTC' : 'LOCAL';
+            e.target.innerText = main.state.clockTz;
+        });
 
         if (main.isTouchDevice) return;
 
         main.updateClock();
 
-        main.getUpcomingLaunches();
+        main.fetchLaunches(`https://ll.thespacedevs.com/2.3.0/launches/upcoming/?ordering=net&limit=${main.state.limit}`, 'Latest and Upcoming', 'upcoming_launches');
     },
 
     // =================================== INTERFACE EVENTS
@@ -32,12 +48,18 @@ const main = {
             SCROLL.targetScroll = THREE.MathUtils.clamp(SCROLL.targetScroll, 0, SCROLL.max);
         }, { passive: false });
         window.addEventListener('hashchange', () => { 
-            gsap.to(SCROLL, { 
-                targetScroll: document.querySelector(location.hash).offsetLeft, 
-                duration: 2, 
-                ease: "power2.out"
-            });
-            location.hash = "";
+            if (!location.hash) return;
+            let targetId = location.hash;
+            if (targetId === '#results') targetId = '#results_section';
+            const target = document.querySelector(targetId);
+            if (target) {
+                gsap.to(SCROLL, { 
+                    targetScroll: target.offsetLeft, 
+                    duration: 2, 
+                    ease: "power2.out"
+                });
+            }
+            history.replaceState(null, null, ' ');
         });
     },
     createPlanetAnimation(CONTAINER, SCROLL) {
@@ -222,16 +244,18 @@ const main = {
 
         const getClock = () => {
             d = new Date();
+            const isUTC = main.state.clockTz === 'UTC';
             return [
-                    d.getHours(),
-                    d.getMinutes(),
-                    d.getSeconds()
+                    isUTC ? d.getUTCHours() : d.getHours(),
+                    isUTC ? d.getUTCMinutes() : d.getMinutes(),
+                    isUTC ? d.getUTCSeconds() : d.getSeconds()
                 ]
                 .reduce(padClock, '');
         }
 
-        const getClass = (n, i2) => {
-            return classList.find((class_, classIndex) => Math.abs(n - i2) === classIndex) || '';
+        const getClass = (n, i2, K) => {
+            let digitAtIdx = (K - 1) - i2;
+            return classList.find((class_, classIndex) => Math.abs(n - digitAtIdx) === classIndex) || '';
         }
 
         let loop = setInterval(() => {
@@ -239,52 +263,111 @@ const main = {
 
             columns.forEach((ele, i) => {
                 let n = +c[i];
-                let offset = -n * size;
+                let K = ele.children.length;
+                let targetIndex = (K - 1) - n;
+                let offset = -targetIndex * size;
                 ele.style.transform = `translateY(${offset}px)`;
                 Array.from(ele.children).forEach((ele2, i2) => {
-                    ele2.className = 'clock_num ' + getClass(n, i2);
+                    ele2.className = 'clock_num ' + getClass(n, i2, K);
                 });
             });
         }, 1000);
     },
+    // =================================== CONSUME SERVICES & SIDEBAR
 
-    // =================================== CONSUME SERVICES
+    initSidebarEvents() {
+        const upcomingBtn = document.getElementById('nav-upcoming');
+        const previousBtn = document.getElementById('nav-previous');
+        const searchBtn = document.getElementById('nav-search');
 
-    getLastLaunches(limit=10) {
-        const URL = `https://ll.thespacedevs.com/2.3.0/launches/?ordering=-net&limit=${limit}`;
-        fetch(URL, {
-            headers: {
-                'Accept': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(json => {
-            main.printLaunches(json);
-        })
-        .catch(error => console.log(error));
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+
+        upcomingBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            main.state.currentTab = 'upcoming';
+            main.fetchLaunches(`https://ll.thespacedevs.com/2.3.0/launches/upcoming/?ordering=net&limit=${main.state.limit}`, 'Latest and Upcoming', 'upcoming_launches');
+        });
+
+        previousBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            main.state.currentTab = 'previous';
+            main.fetchLaunches(`https://ll.thespacedevs.com/2.3.0/launches/previous/?ordering=-net&limit=${main.state.limit}`, 'Previous Launches', 'previous_launches');
+        });
+
+        searchBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            main.state.currentTab = 'search';
+            // Placeholder para una futura pantalla de busqueda
+            document.querySelector('#results_title').innerText = 'Search (Coming Soon)';
+            document.querySelector('#results').innerHTML = '<p class="text-white p-8">Search functionality not yet implemented.</p>';
+            main.state.nextUrl = null;
+            main.state.prevUrl = null;
+            main.state.count = 0;
+            main.updatePaginator();
+        });
+
+        btnNext?.addEventListener('click', () => {
+            if (main.state.nextUrl) main.fetchLaunches(main.state.nextUrl, document.querySelector('#results_title').innerText, main.state.currentTab + '_page_next');
+        });
+
+        btnPrev?.addEventListener('click', () => {
+            if (main.state.prevUrl) main.fetchLaunches(main.state.prevUrl, document.querySelector('#results_title').innerText, main.state.currentTab + '_page_prev');
+        });
     },
-    getUpcomingLaunches(limit=10) {
-        const cacheData = main.getDataFromCache(main.cacheKey);
 
-        if (cacheData)
-        {
-            main.printLaunches(cacheData);
+    fetchLaunches(url, title, cacheKey) {
+        document.querySelector('#results').innerHTML = '<div class="p-8 text-slate-300">Cargando lanzamientos...</div>';
+        if(document.querySelector('#results_title')) {
+            document.querySelector('#results_title').innerText = title;
+        }
+        
+        const cached = main.getDataFromCache(cacheKey);
+        if (cached && cached.url === url) {
+            main.handleApiResponse(cached.data);
             return;
         }
 
-        const URL = `https://ll.thespacedevs.com/2.3.0/launches/upcoming/?ordering=net&limit=${limit}`;
-
-        fetch(URL, {
-            headers: {
-                'Accept': 'application/json'
-            }
+        fetch(url, {
+            headers: { 'Accept': 'application/json' }
         })
         .then(res => res.json())
-        .then(json => { 
-            main.saveDataToCache(main.cacheKey, json); 
-            main.printLaunches(json) ;
+        .then(json => {
+            if (json.results) {
+                main.saveDataToCache(cacheKey, { url: url, data: json });
+                main.handleApiResponse(json);
+            } else if (json.detail) {
+                // Posible error de API, como "Throttled"
+                document.querySelector('#results').innerHTML = `<div class="p-8 text-red-400">Error: ${json.detail}</div>`;
+            } else {
+                document.querySelector('#results').innerHTML = '<div class="p-8 text-white">Error loading data</div>';
+            }
         })
-        .catch(error => console.log(error));
+        .catch(err => {
+            console.error(err);
+            document.querySelector('#results').innerHTML = '<div class="p-8 text-red-400">Connection error</div>';
+        });
+    },
+
+    handleApiResponse(json) {
+        main.state.nextUrl = json.next;
+        main.state.prevUrl = json.previous;
+        main.state.count = json.count;
+        main.updatePaginator();
+        main.printLaunches(json);
+    },
+
+    updatePaginator() {
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+        const indicator = document.getElementById('page-indicator');
+
+        if (btnNext) btnNext.disabled = !main.state.nextUrl;
+        if (btnPrev) btnPrev.disabled = !main.state.prevUrl;
+        
+        if (indicator) {
+            indicator.innerText = `Total: ${main.state.count}`;
+        }
     },
 
     // =================================== CACHE STORAGE
@@ -294,16 +377,18 @@ const main = {
         let data = null;
 
         if (CACHED) {
-            const { data: DATA, timestamp: TIMESTAMP } = JSON.parse(CACHED);
-
-            if (Date.now() - TIMESTAMP < main.cacheTime) {
-                console.log('getting from cache');
-                data = DATA;
+            try {
+                const { data: DATA, timestamp: TIMESTAMP } = JSON.parse(CACHED);
+                if (Date.now() - TIMESTAMP < main.cacheTime) {
+                    data = DATA;
+                }
+            } catch(e) {
+                console.error("Cache parsing error", e);
             }
         }
-
         return data;
     },
+    
     saveDataToCache(cacheKey, data) {
         localStorage.setItem(
             cacheKey,
@@ -312,68 +397,215 @@ const main = {
                 timestamp: Date.now()
             })
         );
-        console.log('cache saved');
     },
 
     // =================================== INTERFACE BUILDING
 
     printLaunches(data) {
         const RESULTS = data.results ?? [];
-        
+
         if (RESULTS.length < 1)
-            return
+            return;
 
-        const resultsElement = document.querySelector('#results');
-        let htmlTemplate = ``;
+        if (main.state.currentTab === 'upcoming') {
+            const nextLaunch = RESULTS[0];
+            const netDate = new Date(nextLaunch.net).getTime();
+            const timerEle = document.querySelector('#next-launch-timer-top');
+            const statusEle = document.querySelector('#next-launch-status-top');
+            
+            if (statusEle) {
+                statusEle.innerText = nextLaunch?.status?.name ?? 'UNKNOWN';
+            }
 
-        const createBtnWatchLive = (link, title) => {
-            return `<a href="${link}" title="${title}" type="button" target="_blank" class="py-2 px-4 bg-white font-bold text-xl rounded-2xl text-slate-600">Watch live</a>`;
+            if (main.state.nextLaunchInterval) clearInterval(main.state.nextLaunchInterval);
+            
+            if (timerEle && netDate) {
+                main.state.nextLaunchInterval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = netDate - now;
+
+                    if (distance < 0) {
+                        timerEle.innerText = "00d 00h 00m 00s";
+                        clearInterval(main.state.nextLaunchInterval);
+                        return;
+                    }
+
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    timerEle.innerText = `${String(days).padStart(2, '0')}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+                }, 1000);
+            }
         }
 
-        RESULTS.forEach(result => {
-            htmlTemplate += `
-                <div class="launch_card rounded-xl overflow-hidden grid grid-cols-6">
-                    <div class="col-span-2">
-                        <img class="w-full h-full object-cover" src="${ result?.image?.image_url ?? ''}" loading="lazy" alt="${result?.image?.name ?? 'image' }">
+        const resultsElement = document.querySelector('#results');
+
+        const getStatusClasses = (statusName) => {
+            if (statusName?.includes('Go'))
+                return 'lc-status--go';
+            if (statusName?.includes('Success') || statusName?.includes('Deployed'))
+                return 'lc-status--success';
+            if (statusName?.includes('Fail'))
+                return 'lc-status--fail';
+            return 'lc-status--hold';
+        };
+
+        const formatDate = (isoString) => {
+            const d = new Date(isoString);
+            const optDate = { month: 'short', day: 'numeric', year: 'numeric' };
+            const optTime = { hour: '2-digit', minute: '2-digit' };
+            
+            return {
+                localDate: d.toLocaleDateString(undefined, optDate),
+                localTime: d.toLocaleTimeString(undefined, optTime),
+                utcTime: d.toLocaleTimeString('en-GB', { ...optTime, timeZone: 'UTC' })
+            };
+        };
+
+        const createLaunchCard = (result) => {
+            const imageUrl = result?.image?.image_url ?? '';
+            const provider  = result?.launch_service_provider?.name ?? 'Unknown';
+            const name      = result?.name ?? 'Unknown';
+            const statusName = result?.status?.name ?? 'Unknown';
+            const statusCls  = getStatusClasses(statusName);
+            const padName   = result?.pad?.name ?? '—';
+            const locName   = result?.pad?.location?.name ?? '—';
+            const net       = result?.net ?? null;
+            const prob      = result?.probability;
+            const id        = result?.id ?? Math.random().toString(36).slice(2);
+            const vidUrls   = (result?.mission?.vid_urls ?? []).length > 0 ? (result?.mission?.vid_urls ?? []) : [{ title: 'YouTube', url: `https://www.youtube.com/results?search_query=${name.replace(/\s/g, "+")}+live+stream`}];
+            const netFmt    = net ? formatDate(net) : { localDate: '—', localTime: '—', utcTime: '—' };
+
+            const watchBtn = vidUrls.length > 0
+                ? `<a href="${vidUrls[0]?.url ?? '#'}" target="_blank" class="lc-btn-watch">Watch Mission</a>`
+                : `<button class="lc-btn-watch lc-btn-watch--disabled" disabled>No Webcast</button>`;
+
+            const probHtml = prob != null
+                ? `<span class="lc-meta-value lc-meta-value--blue">${prob}%</span>
+                   <span class="lc-meta-label">Chance of GO</span>`
+                : `<span class="lc-meta-value">—</span>
+                   <span class="lc-meta-label">No data</span>`;
+
+            return `
+                <div class="launch_card">
+                    <!-- Background image -->
+                    <div class="lc-bg">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${name}" loading="lazy" class="lc-bg-img">` : ''}
+                        <div class="lc-bg-overlay"></div>
                     </div>
-                    <div class="p-4 col-span-4 grid grid-rows-5 overflow-hidden text-center text-wrap">
-                        
-                            <div class="text-left row-span-2">
-                                <small class="text-slate-300 truncate">${ result?.launch_service_provider?.name ?? 'Unknown' }</small>
-                                <h1 class="text-2xl">${ result?.name ?? 'Unknown' }</h1>
-                            </div>
+
+                    <!-- Content -->
+                    <div class="lc-body">
+
+                        <!-- Header: provider + status badge -->
+                        <div class="lc-header">
                             <div>
-                                <div class="flex gap-2 items-center items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
-                                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-                                    </svg>
-                                    <h1 class="text-md truncate">
-                                        ${ result?.pad?.location?.name ?? 'Unknown' }
-                                    </h1>
+                                <span class="lc-provider">${provider}</span>
+                                <h2 class="lc-title">${name}</h2>
+                            </div>
+                            <div class="lc-status ${statusCls}">
+                                <span class="lc-status-dot"></span>
+                                ${statusName}
+                            </div>
+                        </div>
+
+                        <!-- Countdown -->
+                        <div class="lc-section">
+                            <span class="lc-label">T-Minus to Liftoff</span>
+                            <div class="lc-timer" id="timer-${id}">
+                                <div class="lc-timer-unit">
+                                    <span class="lc-timer-num days">00</span>
+                                    <span class="lc-timer-label">Days</span>
                                 </div>
+                                <span class="lc-timer-sep">:</span>
+                                <div class="lc-timer-unit">
+                                    <span class="lc-timer-num hours">00</span>
+                                    <span class="lc-timer-label">Hours</span>
+                                </div>
+                                <span class="lc-timer-sep">:</span>
+                                <div class="lc-timer-unit">
+                                    <span class="lc-timer-num minutes">00</span>
+                                    <span class="lc-timer-label">Mins</span>
+                                </div>
+                                <span class="lc-timer-sep">:</span>
+                                <div class="lc-timer-unit">
+                                    <span class="lc-timer-num seconds lc-timer-num--blue">00</span>
+                                    <span class="lc-timer-label">Secs</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Meta grid: schedule / probability / pad -->
+                        <div class="lc-meta-grid">
+                            <div class="lc-meta-cell">
+                                <span class="lc-meta-label">Target Schedule</span>
+                                <span class="lc-meta-value">${netFmt.localDate}</span>
+                                <span class="lc-meta-sub">${netFmt.localTime} (Local)</span>
+                                <span class="lc-meta-sub">${netFmt.utcTime} UTC</span>
+                            </div>
+                            <div class="lc-meta-cell lc-meta-cell--right">
+                                <span class="lc-meta-label">Weather Prob.</span>
+                                ${probHtml}
+                            </div>
+                            <div class="lc-meta-cell lc-meta-cell--full lc-meta-cell--pad">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" class="lc-pin-icon">
+                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                                </svg>
                                 <div>
-                                    <h1 class="text-xl">
-                                        Schedule: ${ result?.net ?? '0000-00-00T00:00:00Z' }
-                                    </h1>
+                                    <span class="lc-meta-pad-name">${padName}</span>
+                                    <span class="lc-meta-pad-loc">${locName}</span>
                                 </div>
                             </div>
-                            <div>
-                                <p>Status: ${ result?.status?.name ?? 'Unknown' }</p>
-                                <p class="text-slate-300">${ result?.status?.description ?? '---' }</p>
-                            </div> 
-                            <div class="flex items-center justify-center gap-2">
-                                ${( (result?.mission?.vid_urls ?? []).length > 1 
-                                ? (result?.mission?.vid_urls.forEach(vid => createBtnWatchLive((vid?.url??'#'), (vid?.title??''))))
-                                : '')}
-                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="lc-actions">
+                            ${watchBtn}
+                        </div>
+
                     </div>
                 </div>
             `;
-        });
+        };
 
-        resultsElement.innerHTML = htmlTemplate;
+        resultsElement.innerHTML = RESULTS.map(r => createLaunchCard(r)).join('');
+
+        // Start per-card countdown timers
+        if (main._cardTimerInterval) clearInterval(main._cardTimerInterval);
+
+        main._cardTimerInterval = setInterval(() => {
+            RESULTS.forEach(result => {
+                if (!result?.net || !result?.id) return;
+                const el = document.getElementById(`timer-${result.id}`);
+                if (!el) return;
+
+                const diff = new Date(result.net).getTime() - Date.now();
+                if (diff > 0) {
+                    const days  = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const mins  = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs  = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    el.querySelector('.days').innerText    = String(days).padStart(2, '0');
+                    el.querySelector('.hours').innerText   = String(hours).padStart(2, '0');
+                    el.querySelector('.minutes').innerText = String(mins).padStart(2, '0');
+                    el.querySelector('.seconds').innerText = String(secs).padStart(2, '0');
+                } else {
+                    // Already launched
+                    el.querySelector('.days').innerText    = '00';
+                    el.querySelector('.hours').innerText   = '00';
+                    el.querySelector('.minutes').innerText = '00';
+                    el.querySelector('.seconds').innerText = '00';
+                }
+            });
+        }, 1000);
     }
 }
 document.addEventListener('DOMContentLoaded', () => {
     main.init();
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 });

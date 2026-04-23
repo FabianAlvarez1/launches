@@ -6,7 +6,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <script src="js/main.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="icon" href="resources/images/favicon.ico" type="image/png">
 <link rel="stylesheet" href="css/main.css">
 <title>Launches</title>
@@ -18,92 +20,84 @@
                 <div>
                     <img src="resources/images/launches_logo.png" alt="logo" class="h-6 w-auto object-contain">
                 </div>
-                <div class="flex flex-wrap items-center text-sm">
-                    <div class="py-1 px-4 flex gap-1 mb:gap-2 items-center">
-                        <span class="text-slate-200">T-</span>
-                        <div id="clock_container" class="">
+                <div class="flex flex-wrap items-center text-sm glass">
+                    <div class="py-1 px-4 flex gap-3 items-center border-r border-slate-800 pr-8">
+                        <button id="btn-clock-tz" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer border border-slate-700">LOCAL</button>
+                        <span>T-</span>
+                        <div id="clock_container">
                             <div class="clock_column">
-                                <div class="clock_num">0</div>
-                                <div class="clock_num">1</div>
                                 <div class="clock_num">2</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">0</div>
                             </div>
                             <div class="clock_column">
-                                <div class="clock_num">0</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">4</div>
-                                <div class="clock_num">5</div>
-                                <div class="clock_num">6</div>
-                                <div class="clock_num">7</div>
-                                <div class="clock_num">8</div>
                                 <div class="clock_num">9</div>
+                                <div class="clock_num">8</div>
+                                <div class="clock_num">7</div>
+                                <div class="clock_num">6</div>
+                                <div class="clock_num">5</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">0</div>
                             </div>
                             <div class="clock_colon"></div>
                             <div class="clock_column">
-                                <div class="clock_num">0</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">4</div>
                                 <div class="clock_num">5</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">0</div>
                             </div>
                             <div class="clock_column">
-                                <div class="clock_num">0</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">4</div>
-                                <div class="clock_num">5</div>
-                                <div class="clock_num">6</div>
-                                <div class="clock_num">7</div>
-                                <div class="clock_num">8</div>
                                 <div class="clock_num">9</div>
+                                <div class="clock_num">8</div>
+                                <div class="clock_num">7</div>
+                                <div class="clock_num">6</div>
+                                <div class="clock_num">5</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">0</div>
                             </div>
                             <div class="clock_colon"></div>
                             <div class="clock_column">
-                                <div class="clock_num">0</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">4</div>
                                 <div class="clock_num">5</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">0</div>
                             </div>
                             <div class="clock_column">
-                                <div class="clock_num">0</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">4</div>
-                                <div class="clock_num">5</div>
-                                <div class="clock_num">6</div>
-                                <div class="clock_num">7</div>
-                                <div class="clock_num">8</div>
                                 <div class="clock_num">9</div>
+                                <div class="clock_num">8</div>
+                                <div class="clock_num">7</div>
+                                <div class="clock_num">6</div>
+                                <div class="clock_num">5</div>
+                                <div class="clock_num">4</div>
+                                <div class="clock_num">3</div>
+                                <div class="clock_num">2</div>
+                                <div class="clock_num">1</div>
+                                <div class="clock_num">0</div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="py-1 px-4 flex gap-1 mb:gap-2 items-center">
-                        <span class="text-slate-200">Next launch:</span>
-                        <span class="tracking-wide text-slate-600">
-                            00d 00h 00m 00s 
-                        </span>
-                    </div>
-                    <div class="py-1 px-4 flex gap-1 mb:gap-2 items-center">
-                        <span class="text-slate-200">Status:</span>
-                        <span class="tracking-wide text-slate-600">
-                            STANDBY
-                        </span>
-                    </div>
-                    <div class="py-1 px-4 flex gap-1 mb:gap-2 items-center">
-                        <span class="text-slate-200">Last launch:</span>
-                        <div class="tracking-wide text-slate-600">
-                            <span class="text-slate-600">unknown</span>
-                            <span> | </span>
-                            <span class="text-green-600">Success</span>
+                    <!-- Next Launch Section -->
+                    <div class="py-1 px-8 flex items-center gap-4 hidden md:flex">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-blue-900/30 text-blue-400 border border-blue-800/50">Next launch</span>
+                            <span id="next-launch-timer-top" class="font-mono text-slate-200 tracking-wider text-sm">--d --h --m --s</span>
                         </div>
-                    </div>
+                        <span class="text-slate-600">-</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500 text-xs uppercase tracking-wider">Status:</span>
+                            <span id="next-launch-status-top" class="text-slate-300 text-xs font-semibold">STANDBY</span>
+                        </div>
                 </div>
             </nav>
             <div class="w-full h-full grid grid-cols-2">
@@ -127,49 +121,51 @@
             </div>
         </div>
 
-        <div id="results_section" class="flex-col flex-wrap">
-             <div class="px-8 py-6 w-screen sticky left-0 border-y border-slate-800">
-                <h1 class="text-2xl font-bold text-slate-200">Lastest and Upcoming</h1>
-            </div>
+        <div id="results_section" class="flex relative">
+            
+            <!-- Sticky Lateral Menu -->
+            <aside class="sticky left-0 h-screen border-r border-slate-800 z-20 flex flex-col bg-transparent backdrop-blur-none" style="width: 200px; height: 100%;">
+                <!-- Section 1: Top spacer -->
+                <div class="h-16"></div>
 
-            <div id="results" class="px-8 flex items-center justify-center flex-wrap gap-20">
-
-                <!-- ========================== Temporary markup used for layout scaffolding in the future
-
-                <div class="launch_card rounded-xl grid grid-cols-6">
-                    <div class="col-span-2">
-                        <img class="w-full h-full object-cover" src="https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon2520925_image_20221009234147.png" loading="lazy" alt="Starlink night fairing">
-                    </div>
-                    <div class="col-span-4 grid grid-rows-5 p-4 overflow-hidden text-center text-wrap">
-                        <div class="text-left row-span-2">
-                            <small class="text-slate-300 truncate">SpaceX</small>
-                            <h1 class="text-2xl">Falcon 9 Block 5 | Starlink Group 6-100</h1>
-                        </div>
-                        <div>
-                            <div class="flex gap-2 items-center items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
-                                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-                                </svg>
-                                <h1 class="text-md truncate">
-                                    Cape Canaveral SFS, FL, USA
-                                </h1>
-                            </div>
-                            <div>
-                                <h1 class="text-xl">
-                                    Schedule: 2026-01-18T23:31:40Z
-                                </h1>
-                            </div>
-                        </div>
-                        <div>
-                            <p>Status: Launch Successful</p>
-                            <p class="text-slate-300">The launch vehicle successfully inserted its payload(s) into the target orbit(s).</p>
-                        </div>
-                        <div class="flex items-center justify-center">
-                            <a target="_blank" href="https://google.com" type="button" class="py-2 px-4 bg-white font-bold text-xl rounded-2xl text-slate-600">Watch live</a>
-                        </div>
-                    </div>
+                <!-- Section 2: Navigation -->
+                <div class="p-8 bg-black" id="results_nav">
+                    <h2 class="text-xs font-bold uppercase text-slate-500 mb-6">Views</h2>
+                    <nav class="flex flex-col gap-6">
+                        <a href="#" id="nav-upcoming" class="text-slate-200 hover:text-white font-semibold flex items-center gap-3 transition-colors">
+                            <i data-lucide="calendar-clock" class="w-5 h-5"></i> Upcoming
+                        </a>
+                        <a href="#" id="nav-previous" class="text-slate-500 hover:text-white font-semibold flex items-center gap-3 transition-colors">
+                            <i data-lucide="history" class="w-5 h-5"></i> Previous
+                        </a>
+                        <a href="#" id="nav-search" class="text-slate-500 hover:text-white font-semibold flex items-center gap-3 transition-colors">
+                            <i data-lucide="search" class="w-5 h-5"></i> Search
+                        </a>
+                    </nav>
                 </div>
-                -->
+                
+                <!-- Section 3: Footer & Paginator -->
+                <div class="p-6 border-t border-slate-800 bg-black">
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="btn-prev" class="text-slate-400 hover:text-white disabled:opacity-30 transition-opacity" disabled>
+                            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                        </button>
+                        <span id="page-indicator" class="text-xs text-slate-500 font-mono">1 / ?</span>
+                        <button id="btn-next" class="text-slate-400 hover:text-white disabled:opacity-30 transition-opacity">
+                            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <a href="https://thespacedevs.com/" target="_blank" class="text-[10px] text-slate-400 text-center uppercase tracking-wider">Data by: TheSpaceDevs API</a>
+                </div>
+            </aside>
+
+            <!-- Main Results Wrapper -->
+            <div class="flex flex-col flex-1 relative bg-transparent">
+                <div class="px-6 py-4 sticky left-[200px] border-y border-slate-800 z-10 w-[calc(100vw-200px)] bg-transparent backdrop-blur-none before:content-[''] before:absolute before:top-[-1px] before:bottom-[-1px] before:-left-[200px] before:w-[100vw] before:border-y before:border-slate-800 before:-z-10">
+                    <h1 id="results_title" class="text-1xl font-bold text-slate-300">Latest and Upcoming</h1>
+                </div>
+                <div id="results"></div>
+                
             </div>
         </div>
     </div>
