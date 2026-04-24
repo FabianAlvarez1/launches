@@ -55,26 +55,6 @@ To avoid unnecessary API requests and improve performance:
 - Users can refresh the page freely without triggering new requests
 - Ensures fast loads while keeping data reasonably fresh
 
----
-
-## 🧪 Current Limitations
-
-- Some launch data may change unexpectedly due to mission updates
-- Live streams depend heavily on availability from the provider
-- Advanced multi-filter search (by specific date ranges or exact agency IDs) is not yet implemented
-
----
-
-## 🚧 Future Improvements
-
-- 🌐 Dedicated filters by agency, rocket, or launch site
-- 🔴 Live launch state detection
-- 🧠 Service Worker caching (offline support)
-- 📊 Historical launch analytics
-- 🎥 Embedded live streams
-
----
-
 ## 📡 Data Source
 
 Launch data provided by:
@@ -86,7 +66,6 @@ https://thespacedevs.com/
 
 ## 🧑‍🚀 Author
 
-Built with passion for space, motion, and clean engineering.
+Built with passion for space exploration and software engineering.
 
 **Fabian Álvarez Ávila**
-
