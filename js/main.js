@@ -1,7 +1,8 @@
 const main = {
     isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+    isMobile: window.innerWidth <= 768,
     cacheKey: 'upcoming_launches',
-    cacheTime: (30 * 1000 * 60),
+    cacheTime: (10 * 1000 * 60),
 
     state: {
         limit: 10,
@@ -10,7 +11,8 @@ const main = {
         count: 0,
         currentTab: 'upcoming',
         clockTz: 'LOCAL',
-        nextLaunchInterval: null
+        nextLaunchInterval: null,
+        lastSearchQuery: ''
     },
 
     init() {
@@ -21,18 +23,48 @@ const main = {
             max: CONTAINER.scrollWidth - window.innerWidth
         }
 
-        main.setHorizontalScroll(CONTAINER, SCROLL);
+        // Only apply horizontal scroll on desktop
+        if (!main.isMobile) {
+            main.setHorizontalScroll(CONTAINER, SCROLL);
+        } else {
+            // Mobile: smooth vertical scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    let targetId = link.getAttribute('href');
+                    if (targetId === '#results') targetId = '#results_section';
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        e.preventDefault();
+                        target.scrollIntoView({ behavior: 'smooth' });
+                        history.replaceState(null, null, ' ');
+                    }
+                });
+            });
+        }
+
         main.createPlanetAnimation(CONTAINER, SCROLL);
         main.initSidebarEvents();
+        main.initMobileNav();
 
         document.querySelector('#btn-clock-tz')?.addEventListener('click', (e) => {
             main.state.clockTz = main.state.clockTz === 'LOCAL' ? 'UTC' : 'LOCAL';
             e.target.innerText = main.state.clockTz;
         });
 
-        if (main.isTouchDevice) return;
+        // Topbar collapse toggle
+        document.querySelector('#topbar-toggle')?.addEventListener('click', () => {
+            const data = document.getElementById('topbar-data');
+            const btn = document.getElementById('topbar-toggle');
+            if (data && btn) {
+                data.classList.toggle('collapsed');
+                btn.classList.toggle('rotated');
+            }
+        });
 
-        main.updateClock();
+        // Always init clock and data (mobile included)
+        if (!main.isMobile) {
+            main.updateClock();
+        }
 
         main.fetchLaunches(`https://ll.thespacedevs.com/2.3.0/launches/upcoming/?ordering=net&limit=${main.state.limit}`, 'Latest and Upcoming', 'upcoming_launches');
     },
@@ -170,14 +202,7 @@ const main = {
         PLANETGROUP.add(ATMOSPHERE);
         SCENE.add(PLANETGROUP);
 
-        if (main.isTouchDevice) {
-            document.querySelector('#main').innerHTML = `
-                <div style="width:100vw;height:100vh;display:flex;flex-direction: column;align-items: center;justify-content: center;">
-                    <h1>Disponible solo en PC</h1>
-                    <p class="text-center text-wrap">Este sitio no está optimizado para dispositivos móviles.</p>
-                </div>
-            `;
-        }
+        // Mobile: planet is still visible as background, no blocker
 
         window.addEventListener('resize', () => {
             CAMERA.aspect = window.innerWidth / window.innerHeight;
@@ -187,6 +212,10 @@ const main = {
 
         // Scroll animation
         const getPlanetProgress = () => {
+            if (main.isMobile) {
+                const MAX = window.innerHeight;
+                return THREE.MathUtils.clamp(CONTAINER.scrollTop / MAX, 0, 1);
+            }
             const MAX = window.innerWidth;
             return THREE.MathUtils.clamp(CONTAINER.scrollLeft / MAX, 0, 1);
         }
@@ -222,11 +251,11 @@ const main = {
 
             RENDERER.render(SCENE, CAMERA);
 
-            SCROLL.currentScroll += (SCROLL.targetScroll - SCROLL.currentScroll) * 0.08;
-
-            SCROLL.currentScroll = THREE.MathUtils.clamp( SCROLL.currentScroll, 0, SCROLL.max);
-
-            CONTAINER.scrollLeft = SCROLL.currentScroll;
+            if (!main.isMobile) {
+                SCROLL.currentScroll += (SCROLL.targetScroll - SCROLL.currentScroll) * 0.08;
+                SCROLL.currentScroll = THREE.MathUtils.clamp( SCROLL.currentScroll, 0, SCROLL.max);
+                CONTAINER.scrollLeft = SCROLL.currentScroll;
+            }
         }
 
         animate();
@@ -273,6 +302,57 @@ const main = {
             });
         }, 1000);
     },
+    // =================================== MOBILE NAV
+
+    initMobileNav() {
+        const mobUpcoming = document.getElementById('mob-nav-upcoming');
+        const mobPrevious = document.getElementById('mob-nav-previous');
+        const mobSearch = document.getElementById('mob-nav-search');
+        const btnNextMob = document.getElementById('btn-next-mobile');
+        const btnPrevMob = document.getElementById('btn-prev-mobile');
+
+        const setActive = (btn) => {
+            document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+
+        const scrollToResults = () => {
+            const resultsSection = document.getElementById('results_section');
+            if (resultsSection) {
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        mobUpcoming?.addEventListener('click', () => {
+            setActive(mobUpcoming);
+            main.state.currentTab = 'upcoming';
+            main.fetchLaunches(`https://ll.thespacedevs.com/2.3.0/launches/upcoming/?ordering=net&limit=${main.state.limit}`, 'Latest and Upcoming', 'upcoming_launches');
+            scrollToResults();
+        });
+
+        mobPrevious?.addEventListener('click', () => {
+            setActive(mobPrevious);
+            main.state.currentTab = 'previous';
+            main.fetchLaunches(`https://ll.thespacedevs.com/2.3.0/launches/previous/?ordering=-net&limit=${main.state.limit}`, 'Previous Launches', 'previous_launches');
+            scrollToResults();
+        });
+
+        mobSearch?.addEventListener('click', () => {
+            setActive(mobSearch);
+            main.state.currentTab = 'search';
+            main.showSearchUI();
+            scrollToResults();
+        });
+
+        btnNextMob?.addEventListener('click', () => {
+            if (main.state.nextUrl) main.fetchLaunches(main.state.nextUrl, document.querySelector('#results_title').innerText, main.state.currentTab + '_page_next');
+        });
+
+        btnPrevMob?.addEventListener('click', () => {
+            if (main.state.prevUrl) main.fetchLaunches(main.state.prevUrl, document.querySelector('#results_title').innerText, main.state.currentTab + '_page_prev');
+        });
+    },
+
     // =================================== CONSUME SERVICES & SIDEBAR
 
     initSidebarEvents() {
@@ -283,28 +363,39 @@ const main = {
         const btnNext = document.getElementById('btn-next');
         const btnPrev = document.getElementById('btn-prev');
 
+        const navLinks = [upcomingBtn, previousBtn, searchBtn];
+
+        const setActiveNav = (activeBtn) => {
+            navLinks.forEach(btn => {
+                if (!btn) return;
+                btn.classList.remove('text-slate-200');
+                btn.classList.add('text-slate-500');
+            });
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-500');
+                activeBtn.classList.add('text-slate-200');
+            }
+        };
+
         upcomingBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             main.state.currentTab = 'upcoming';
+            setActiveNav(upcomingBtn);
             main.fetchLaunches(`https://ll.thespacedevs.com/2.3.0/launches/upcoming/?ordering=net&limit=${main.state.limit}`, 'Latest and Upcoming', 'upcoming_launches');
         });
 
         previousBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             main.state.currentTab = 'previous';
+            setActiveNav(previousBtn);
             main.fetchLaunches(`https://ll.thespacedevs.com/2.3.0/launches/previous/?ordering=-net&limit=${main.state.limit}`, 'Previous Launches', 'previous_launches');
         });
 
         searchBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             main.state.currentTab = 'search';
-            // Placeholder para una futura pantalla de busqueda
-            document.querySelector('#results_title').innerText = 'Search (Coming Soon)';
-            document.querySelector('#results').innerHTML = '<p class="text-white p-8">Search functionality not yet implemented.</p>';
-            main.state.nextUrl = null;
-            main.state.prevUrl = null;
-            main.state.count = 0;
-            main.updatePaginator();
+            setActiveNav(searchBtn);
+            main.showSearchUI();
         });
 
         btnNext?.addEventListener('click', () => {
@@ -316,10 +407,83 @@ const main = {
         });
     },
 
+    // =================================== SEARCH
+
+    showSearchUI() {
+        // Auto-collapse topbar data when search is activated
+        const data = document.getElementById('topbar-data');
+        const btnToggle = document.getElementById('topbar-toggle');
+        if (data && btnToggle && !data.classList.contains('collapsed')) {
+            data.classList.add('collapsed');
+            btnToggle.classList.add('rotated');
+        }
+
+        const titleEl = document.querySelector('#results_title');
+        const titleMob = document.querySelector('#results_title_mobile');
+
+        const searchHTML = `
+            <div class="search-bar">
+                <span class="search-bar-label hidden md:inline" style="display: ${main.isMobile ? 'none' : 'inline'}">Search</span>
+                <input type="text" class="search-input" placeholder="e.g. Starlink, Falcon..." value="${main.state.lastSearchQuery}" autocomplete="off" />
+                <button class="search-go-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </button>
+            </div>
+        `;
+
+        if (titleEl) titleEl.innerHTML = searchHTML;
+        if (titleMob) titleMob.innerHTML = searchHTML;
+
+        document.querySelectorAll('.search-input').forEach(input => {
+            const btn = input.nextElementSibling;
+            
+            btn.addEventListener('click', () => {
+                const q = input.value.trim();
+                if (q) main.executeSearch(q);
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const q = input.value.trim();
+                    if (q) main.executeSearch(q);
+                }
+            });
+        });
+
+        // Focus the visible input
+        setTimeout(() => {
+            const visibleInput = Array.from(document.querySelectorAll('.search-input')).find(i => i.offsetParent !== null);
+            if (visibleInput) visibleInput.focus();
+        }, 100);
+
+        // If there's a previous search, reload those results
+        if (main.state.lastSearchQuery) {
+            main.executeSearch(main.state.lastSearchQuery);
+        } else {
+            // Clear results and paginator
+            document.querySelector('#results').innerHTML = `<div class="search-empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><p>Search for launches by name, provider, rocket, pad, or mission</p></div>`;
+            main.state.nextUrl = null;
+            main.state.prevUrl = null;
+            main.state.count = 0;
+            main.updatePaginator();
+        }
+    },
+
+    executeSearch(query) {
+        main.state.lastSearchQuery = query;
+        const url = `https://ll.thespacedevs.com/2.3.0/launches/?search=${encodeURIComponent(query)}&ordering=-last_updated&limit=15`;
+        main.fetchLaunches(url, `__SEARCH__`, `search_${query}`);
+    },
+
+
     fetchLaunches(url, title, cacheKey) {
         document.querySelector('#results').innerHTML = '<div class="p-8 text-slate-300">Cargando lanzamientos...</div>';
-        if(document.querySelector('#results_title')) {
-            document.querySelector('#results_title').innerText = title;
+        // Don't overwrite the search bar when in search mode
+        if (title !== '__SEARCH__') {
+            if(document.querySelector('#results_title')) {
+                document.querySelector('#results_title').innerText = title;
+            }
+            const titleMob = document.querySelector('#results_title_mobile');
+            if (titleMob) titleMob.innerText = title;
         }
         
         const cached = main.getDataFromCache(cacheKey);
@@ -362,12 +526,19 @@ const main = {
         const btnPrev = document.getElementById('btn-prev');
         const indicator = document.getElementById('page-indicator');
 
+        // Desktop paginator
         if (btnNext) btnNext.disabled = !main.state.nextUrl;
         if (btnPrev) btnPrev.disabled = !main.state.prevUrl;
-        
-        if (indicator) {
-            indicator.innerText = `Total: ${main.state.count}`;
-        }
+        if (indicator) indicator.innerText = `Total: ${main.state.count}`;
+
+        // Mobile paginator
+        const btnNextMob = document.getElementById('btn-next-mobile');
+        const btnPrevMob = document.getElementById('btn-prev-mobile');
+        const indicatorMob = document.getElementById('page-indicator-mobile');
+
+        if (btnNextMob) btnNextMob.disabled = !main.state.nextUrl;
+        if (btnPrevMob) btnPrevMob.disabled = !main.state.prevUrl;
+        if (indicatorMob) indicatorMob.innerText = `Total: ${main.state.count}`;
     },
 
     // =================================== CACHE STORAGE
@@ -408,36 +579,58 @@ const main = {
             return;
 
         if (main.state.currentTab === 'upcoming') {
-            const nextLaunch = RESULTS[0];
-            const netDate = new Date(nextLaunch.net).getTime();
             const timerEle = document.querySelector('#next-launch-timer-top');
             const statusEle = document.querySelector('#next-launch-status-top');
-            
-            if (statusEle) {
-                statusEle.innerText = nextLaunch?.status?.name ?? 'UNKNOWN';
-            }
 
-            if (main.state.nextLaunchInterval) clearInterval(main.state.nextLaunchInterval);
-            
-            if (timerEle && netDate) {
-                main.state.nextLaunchInterval = setInterval(() => {
-                    const now = new Date().getTime();
-                    const distance = netDate - now;
-
-                    if (distance < 0) {
-                        timerEle.innerText = "00d 00h 00m 00s";
-                        clearInterval(main.state.nextLaunchInterval);
-                        return;
+            const startNextLaunchTimer = () => {
+                const now = new Date().getTime();
+                let nextLaunch = null;
+                
+                // Buscar el primer lanzamiento que esté estrictamente en el futuro
+                for (let i = 0; i < RESULTS.length; i++) {
+                    if (new Date(RESULTS[i].net).getTime() > now) {
+                        nextLaunch = RESULTS[i];
+                        break;
                     }
+                }
 
-                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                if (main.state.nextLaunchInterval) clearInterval(main.state.nextLaunchInterval);
 
-                    timerEle.innerText = `${String(days).padStart(2, '0')}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
-                }, 1000);
-            }
+                if (!nextLaunch) {
+                    if (timerEle) timerEle.innerText = "00d 00h 00m 00s";
+                    if (statusEle) statusEle.innerText = "NO DATA";
+                    return;
+                }
+
+                const netDate = new Date(nextLaunch.net).getTime();
+                
+                if (statusEle) {
+                    statusEle.innerText = nextLaunch?.status?.name ?? 'UNKNOWN';
+                }
+                
+                if (timerEle && netDate) {
+                    main.state.nextLaunchInterval = setInterval(() => {
+                        const currentNow = new Date().getTime();
+                        const distance = netDate - currentNow;
+
+                        if (distance <= 0) {
+                            timerEle.innerText = "00d 00h 00m 00s";
+                            clearInterval(main.state.nextLaunchInterval);
+                            startNextLaunchTimer(); // Mover al siguiente cuando llega a cero
+                            return;
+                        }
+
+                        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                        timerEle.innerText = `${String(days).padStart(2, '0')}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+                    }, 1000);
+                }
+            };
+
+            startNextLaunchTimer();
         }
 
         const resultsElement = document.querySelector('#results');
@@ -561,7 +754,8 @@ const main = {
                         </div>
 
                         <!-- Actions -->
-                        <div class="lc-actions">
+                        <div class="lc-actions" style="flex-direction:column">
+                            <button class="lc-btn-details" onclick="main.showLaunchModal(${RESULTS.indexOf(result)})">Details</button>
                             ${watchBtn}
                         </div>
 
@@ -571,6 +765,7 @@ const main = {
         };
 
         resultsElement.innerHTML = RESULTS.map(r => createLaunchCard(r)).join('');
+        main._currentResults = RESULTS;
 
         // Start per-card countdown timers
         if (main._cardTimerInterval) clearInterval(main._cardTimerInterval);
@@ -601,6 +796,302 @@ const main = {
                 }
             });
         }, 1000);
+    },
+
+    // =================================== LAUNCH DETAIL MODAL
+
+    showLaunchModal(index) {
+        const r = main._currentResults?.[index];
+        if (!r) return;
+
+        // Remove existing modal if any
+        document.querySelector('.modal-overlay')?.remove();
+
+        const esc = (s) => (s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const linkIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>`;
+
+        // Data extraction
+        const imageUrl = r?.image?.image_url ?? '';
+        const provider = r?.launch_service_provider;
+        const mission = r?.mission;
+        const pad = r?.pad;
+        const loc = pad?.location;
+        const rocket = r?.rocket?.configuration;
+        const status = r?.status;
+        const programs = r?.program ?? [];
+        const netDate = r?.net ? new Date(r.net) : null;
+        const windowStart = r?.window_start ? new Date(r.window_start) : null;
+        const windowEnd = r?.window_end ? new Date(r.window_end) : null;
+
+        const fmtDt = (d) => d ? d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+        const fmtDtUTC = (d) => d ? d.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }) + ' UTC' : '—';
+
+        // Collect all external links
+        const links = [];
+        //if (r?.url) links.push({ label: 'API Source', url: r.url });
+        if (pad?.wiki_url) links.push({ label: 'Pad Wiki', url: pad.wiki_url });
+        if (pad?.map_url) links.push({ label: 'Google Maps', url: pad.map_url });
+        //if (loc?.url) links.push({ label: 'Location API', url: loc.url });
+
+        // Provider links
+        const providerFull = mission?.agencies?.[0] ?? null;
+        if (providerFull?.info_url) links.push({ label: `${providerFull.abbrev ?? 'Provider'} Website`, url: providerFull.info_url });
+        if (providerFull?.wiki_url) links.push({ label: `${providerFull.abbrev ?? 'Provider'} Wiki`, url: providerFull.wiki_url });
+
+        // Social media links
+        const socialLinks = providerFull?.social_media_links ?? [];
+        socialLinks.forEach(sl => {
+            if (sl?.url) links.push({ label: sl.social_media?.name ?? 'Link', url: sl.url });
+        });
+
+        // Mission info/vid urls
+        (mission?.info_urls ?? []).forEach(u => links.push({ label: 'Mission Info', url: u.url ?? u }));
+        (mission?.vid_urls ?? []).forEach(u => links.push({ label: u.title ?? 'Video', url: u.url ?? u }));
+
+        // Program links
+        programs.forEach(p => {
+            if (p?.info_url) links.push({ label: `${p.name} Website`, url: p.info_url });
+            if (p?.wiki_url) links.push({ label: `${p.name} Wiki`, url: p.wiki_url });
+        });
+
+        // Build links HTML
+        const linksHtml = links.length > 0
+            ? `<div class="modal-section">
+                <div class="modal-section-title">External Links</div>
+                <div class="modal-links">
+                    ${links.map(l => `<a href="${l.url}" target="_blank" rel="noopener" class="modal-link-pill">${linkIcon} ${esc(l.label)}</a>`).join('')}
+                </div>
+               </div>`
+            : '';
+
+        // Provider stats
+        const pStats = providerFull;
+        const statsHtml = pStats && pStats.total_launch_count != null
+            ? `<div class="modal-section">
+                <div class="modal-section-title">Provider Statistics — ${esc(pStats.name)}</div>
+                <div class="modal-stat-row">
+                    <div class="modal-stat"><span class="modal-stat-num">${pStats.total_launch_count}</span><span class="modal-stat-label">Total Launches</span></div>
+                    <div class="modal-stat"><span class="modal-stat-num">${pStats.successful_launches}</span><span class="modal-stat-label">Successful</span></div>
+                    <div class="modal-stat"><span class="modal-stat-num">${pStats.failed_launches}</span><span class="modal-stat-label">Failed</span></div>
+                    <div class="modal-stat"><span class="modal-stat-num">${pStats.pending_launches}</span><span class="modal-stat-label">Pending</span></div>
+                    <div class="modal-stat"><span class="modal-stat-num">${pStats.consecutive_successful_launches}</span><span class="modal-stat-label">Streak</span></div>
+                    ${pStats.attempted_landings > 0 ? `<div class="modal-stat"><span class="modal-stat-num">${pStats.successful_landings}/${pStats.attempted_landings}</span><span class="modal-stat-label">Landings</span></div>` : ''}
+                </div>
+               </div>`
+            : '';
+
+        // Programs section
+        const programsHtml = programs.length > 0
+            ? `<div class="modal-section">
+                <div class="modal-section-title">Associated Programs</div>
+                ${programs.map(p => `
+                    <div class="modal-grid">
+                        <div class="modal-field"><span class="modal-field-label">Program</span><span class="modal-field-value">${esc(p.name)}</span></div>
+                        <div class="modal-field"><span class="modal-field-label">Type</span><span class="modal-field-value">${esc(p.type?.name ?? '—')}</span></div>
+                    </div>
+                    ${p.description ? `<p class="modal-description">${esc(p.description)}</p>` : ''}
+                `).join('')}
+               </div>`
+            : '';
+
+        // Build modal HTML
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-container">
+                <div class="modal-hero">
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${esc(r.name)}">` : '<div style="background:#111827;width:100%;height:100%"></div>'}
+                    <div class="modal-hero-overlay"></div>
+                    <div class="modal-hero-title">
+                        <span>${esc(provider?.name)}</span>
+                        <h2>${esc(r.name)}</h2>
+                    </div>
+                    <button class="modal-close" id="modal-close-btn">&times;</button>
+                </div>
+                <div class="modal-scroll">
+
+                    <!-- Status & Schedule -->
+                    <div class="modal-section">
+                        <div class="modal-section-title">Launch Status & Schedule</div>
+                        <div class="modal-grid">
+                            <div class="modal-field">
+                                <span class="modal-field-label">Status</span>
+                                <span class="modal-field-value">${esc(status?.name)} — ${esc(status?.description)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Precision</span>
+                                <span class="modal-field-value">${esc(r?.net_precision?.name ?? '—')}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">NET (Local)</span>
+                                <span class="modal-field-value">${fmtDt(netDate)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">NET (UTC)</span>
+                                <span class="modal-field-value">${fmtDtUTC(netDate)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Window Start</span>
+                                <span class="modal-field-value">${fmtDtUTC(windowStart)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Window End</span>
+                                <span class="modal-field-value">${fmtDtUTC(windowEnd)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Weather Probability</span>
+                                <span class="modal-field-value">${r.probability != null ? r.probability + '%' : '—'}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Weather Concerns</span>
+                                <span class="modal-field-value">${esc(r.weather_concerns) || '—'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="modal-divider">
+
+                    <!-- Mission -->
+                    ${mission ? `
+                    <div class="modal-section">
+                        <div class="modal-section-title">Mission Details</div>
+                        <div class="modal-grid">
+                            <div class="modal-field">
+                                <span class="modal-field-label">Mission Name</span>
+                                <span class="modal-field-value">${esc(mission.name)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Mission Type</span>
+                                <span class="modal-field-value">${esc(mission.type)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Orbit</span>
+                                <span class="modal-field-value">${esc(mission.orbit?.name ?? '—')} (${esc(mission.orbit?.abbrev ?? '')})</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Celestial Body</span>
+                                <span class="modal-field-value">${esc(mission.orbit?.celestial_body?.name ?? '—')}</span>
+                            </div>
+                        </div>
+                        ${mission.description ? `<p class="modal-description">${esc(mission.description)}</p>` : ''}
+                    </div>
+                    <hr class="modal-divider">
+                    ` : ''}
+
+                    <!-- Rocket -->
+                    ${rocket ? `
+                    <div class="modal-section">
+                        <div class="modal-section-title">Launch Vehicle</div>
+                        <div class="modal-grid">
+                            <div class="modal-field">
+                                <span class="modal-field-label">Rocket</span>
+                                <span class="modal-field-value">${esc(rocket.full_name ?? rocket.name)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Variant</span>
+                                <span class="modal-field-value">${esc(rocket.variant) || '—'}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Family</span>
+                                <span class="modal-field-value">${(rocket.families ?? []).map(f => esc(f.name)).join(', ') || '—'}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Provider</span>
+                                <span class="modal-field-value">${esc(provider?.name)} (${esc(provider?.type?.name ?? '')})</span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="modal-divider">
+                    ` : ''}
+
+                    <!-- Pad & Location -->
+                    ${pad ? `
+                    <div class="modal-section">
+                        <div class="modal-section-title">Launch Site</div>
+                        <div class="modal-grid">
+                            <div class="modal-field">
+                                <span class="modal-field-label">Pad</span>
+                                <span class="modal-field-value">${esc(pad.name)}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Location</span>
+                                <span class="modal-field-value">${esc(loc?.name ?? '—')}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Country</span>
+                                <span class="modal-field-value">${esc(pad.country?.name ?? '—')}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Coordinates</span>
+                                <span class="modal-field-value">
+                                    ${pad.latitude != null ? `<a href="${pad.map_url ?? `https://www.google.com/maps?q=${pad.latitude},${pad.longitude}`}" target="_blank">${pad.latitude}°, ${pad.longitude}°</a>` : '—'}
+                                </span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Pad Launches</span>
+                                <span class="modal-field-value">${pad.total_launch_count ?? '—'}</span>
+                            </div>
+                            <div class="modal-field">
+                                <span class="modal-field-label">Location Launches</span>
+                                <span class="modal-field-value">${loc?.total_launch_count ?? '—'}</span>
+                            </div>
+                        </div>
+                        ${pad.description ? `<p class="modal-description">${esc(pad.description)}</p>` : ''}
+                        ${loc?.description ? `<p class="modal-description">${esc(loc.description)}</p>` : ''}
+                    </div>
+                    <hr class="modal-divider">
+                    ` : ''}
+
+                    <!-- Provider Stats -->
+                    ${statsHtml}
+                    ${statsHtml ? '<hr class="modal-divider">' : ''}
+
+                    <!-- Programs -->
+                    ${programsHtml}
+                    ${programsHtml ? '<hr class="modal-divider">' : ''}
+
+                    <!-- Global Stats -->
+                    <div class="modal-section">
+                        <div class="modal-section-title">Global Launch Statistics</div>
+                        <div class="modal-stat-row">
+                            <div class="modal-stat"><span class="modal-stat-num">${r.orbital_launch_attempt_count ?? '—'}</span><span class="modal-stat-label">Orbital Attempts (All-time)</span></div>
+                            <div class="modal-stat"><span class="modal-stat-num">${r.orbital_launch_attempt_count_year ?? '—'}</span><span class="modal-stat-label">This Year</span></div>
+                            <div class="modal-stat"><span class="modal-stat-num">${r.agency_launch_attempt_count ?? '—'}</span><span class="modal-stat-label">Agency Total</span></div>
+                            <div class="modal-stat"><span class="modal-stat-num">${r.agency_launch_attempt_count_year ?? '—'}</span><span class="modal-stat-label">Agency This Year</span></div>
+                        </div>
+                    </div>
+
+                    <hr class="modal-divider">
+
+                    <!-- Links -->
+                    ${linksHtml}
+
+                    <div style="font-size:0.6rem;color:#475569;text-align:center;padding-top:0.5rem">Last updated: ${r.last_updated ? new Date(r.last_updated).toLocaleString() : '—'}</div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Animate in
+        requestAnimationFrame(() => modal.classList.add('active'));
+
+        // Close handlers
+        const closeModal = () => {
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+        };
+
+        modal.querySelector('#modal-close-btn').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', function handler(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', handler);
+            }
+        });
     }
 }
 document.addEventListener('DOMContentLoaded', () => {

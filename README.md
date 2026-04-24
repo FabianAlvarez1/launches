@@ -13,14 +13,15 @@ The interface combines horizontal scrolling, real-time data, and 3D visualizatio
 ## ✨ Features
 
 - 🌍 Upcoming & past space launches from multiple agencies  
+- 🔍 **Full-text Search** by mission, rocket, pad, or provider  
 - 🛰️ Real-time data powered by **The Space Devs API**  
 - 🌌 Interactive 3D planet animation synchronized with scroll  
-- 🧭 Custom horizontal scrolling experience  
-- ⏱️ Local time reference for launch countdown awareness  
+- ⏱️ **Dynamic Global Clock** with interactive Local/UTC timezone toggle  
+- 🚀 **Intelligent Next Launch Countdown** that automatically sequences to the next strictly future launch  
+- 📱 **Fully responsive UI**: Horizontal scroll on Desktop, smooth vertical progression on Mobile  
+- 📄 Comprehensive **Details Modal** presenting extensive mission, agency, and rocket metrics  
 - 📦 Smart client-side caching using `localStorage`  
-- ⚡ Reduced API calls with time-based cache invalidation  
-- 🎨 Clean, minimalist, and responsive layout  
-- 🖥️ Desktop-first experience (mobile intentionally restricted)
+- 🎨 Clean, minimalist "metric-style" UI with dynamic, auto-collapsing topbar elements
 
 ---
 
@@ -58,17 +59,16 @@ To avoid unnecessary API requests and improve performance:
 
 ## 🧪 Current Limitations
 
-- Mobile devices are not supported (by design)
-- Some launch data may change due to mission updates
-- Live streams depend on availability from the provider
+- Some launch data may change unexpectedly due to mission updates
+- Live streams depend heavily on availability from the provider
+- Advanced multi-filter search (by specific date ranges or exact agency IDs) is not yet implemented
 
 ---
 
 ## 🚧 Future Improvements
 
-- 🌐 Filters by agency, rocket, or launch site
+- 🌐 Dedicated filters by agency, rocket, or launch site
 - 🔴 Live launch state detection
-- ⏳ Countdown timers per launch
 - 🧠 Service Worker caching (offline support)
 - 📊 Historical launch analytics
 - 🎥 Embedded live streams

@@ -17,92 +17,101 @@
     <div id="main" class="font-sans">
         <div id="landing" class="w-screen h-screen border-r border-slate-800">
             <nav class="px-8 py-4 flex flex-wrap items-center justify-between gap-4 w-full fixed">
-                <div>
+                <a href="#landing" class="cursor-pointer">
                     <img src="resources/images/launches_logo.png" alt="logo" class="h-6 w-auto object-contain">
-                </div>
-                <div class="flex flex-wrap items-center text-sm glass">
-                    <div class="py-1 px-4 flex gap-3 items-center border-r border-slate-800 pr-8">
-                        <button id="btn-clock-tz" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer border border-slate-700">LOCAL</button>
-                        <span>T-</span>
-                        <div id="clock_container">
-                            <div class="clock_column">
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">0</div>
+                </a>
+                <div class="flex items-center gap-2">
+                    <div id="topbar-data" class="topbar-data">
+                        <div class="flex flex-wrap items-center text-sm glass rounded-full">
+                            <div class="py-1 px-4 flex gap-3 items-center border-r border-slate-800 pr-8">
+                                <button id="btn-clock-tz" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer border border-slate-700">LOCAL</button>
+                                <span>T-</span>
+                                <div id="clock_container">
+                                    <div class="clock_column">
+                                        <div class="clock_num">2</div>
+                                        <div class="clock_num">1</div>
+                                        <div class="clock_num">0</div>
+                                    </div>
+                                    <div class="clock_column">
+                                        <div class="clock_num">9</div>
+                                        <div class="clock_num">8</div>
+                                        <div class="clock_num">7</div>
+                                        <div class="clock_num">6</div>
+                                        <div class="clock_num">5</div>
+                                        <div class="clock_num">4</div>
+                                        <div class="clock_num">3</div>
+                                        <div class="clock_num">2</div>
+                                        <div class="clock_num">1</div>
+                                        <div class="clock_num">0</div>
+                                    </div>
+                                    <div class="clock_colon"></div>
+                                    <div class="clock_column">
+                                        <div class="clock_num">5</div>
+                                        <div class="clock_num">4</div>
+                                        <div class="clock_num">3</div>
+                                        <div class="clock_num">2</div>
+                                        <div class="clock_num">1</div>
+                                        <div class="clock_num">0</div>
+                                    </div>
+                                    <div class="clock_column">
+                                        <div class="clock_num">9</div>
+                                        <div class="clock_num">8</div>
+                                        <div class="clock_num">7</div>
+                                        <div class="clock_num">6</div>
+                                        <div class="clock_num">5</div>
+                                        <div class="clock_num">4</div>
+                                        <div class="clock_num">3</div>
+                                        <div class="clock_num">2</div>
+                                        <div class="clock_num">1</div>
+                                        <div class="clock_num">0</div>
+                                    </div>
+                                    <div class="clock_colon"></div>
+                                    <div class="clock_column">
+                                        <div class="clock_num">5</div>
+                                        <div class="clock_num">4</div>
+                                        <div class="clock_num">3</div>
+                                        <div class="clock_num">2</div>
+                                        <div class="clock_num">1</div>
+                                        <div class="clock_num">0</div>
+                                    </div>
+                                    <div class="clock_column">
+                                        <div class="clock_num">9</div>
+                                        <div class="clock_num">8</div>
+                                        <div class="clock_num">7</div>
+                                        <div class="clock_num">6</div>
+                                        <div class="clock_num">5</div>
+                                        <div class="clock_num">4</div>
+                                        <div class="clock_num">3</div>
+                                        <div class="clock_num">2</div>
+                                        <div class="clock_num">1</div>
+                                        <div class="clock_num">0</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="clock_column">
-                                <div class="clock_num">9</div>
-                                <div class="clock_num">8</div>
-                                <div class="clock_num">7</div>
-                                <div class="clock_num">6</div>
-                                <div class="clock_num">5</div>
-                                <div class="clock_num">4</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">0</div>
-                            </div>
-                            <div class="clock_colon"></div>
-                            <div class="clock_column">
-                                <div class="clock_num">5</div>
-                                <div class="clock_num">4</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">0</div>
-                            </div>
-                            <div class="clock_column">
-                                <div class="clock_num">9</div>
-                                <div class="clock_num">8</div>
-                                <div class="clock_num">7</div>
-                                <div class="clock_num">6</div>
-                                <div class="clock_num">5</div>
-                                <div class="clock_num">4</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">0</div>
-                            </div>
-                            <div class="clock_colon"></div>
-                            <div class="clock_column">
-                                <div class="clock_num">5</div>
-                                <div class="clock_num">4</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">0</div>
-                            </div>
-                            <div class="clock_column">
-                                <div class="clock_num">9</div>
-                                <div class="clock_num">8</div>
-                                <div class="clock_num">7</div>
-                                <div class="clock_num">6</div>
-                                <div class="clock_num">5</div>
-                                <div class="clock_num">4</div>
-                                <div class="clock_num">3</div>
-                                <div class="clock_num">2</div>
-                                <div class="clock_num">1</div>
-                                <div class="clock_num">0</div>
+                            
+                            <!-- Next Launch Section -->
+                            <div class="py-1 px-8 flex items-center gap-4 hidden md:flex">
+                                <div class="flex items-center gap-3">
+                                    <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-blue-900/30 text-blue-400 border border-blue-800/50">Next launch</span>
+                                    <span id="next-launch-timer-top" class="font-mono text-slate-200 tracking-wider text-sm">--d --h --m --s</span>
+                                </div>
+                                <span class="text-slate-600">-</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-slate-500 text-xs uppercase tracking-wider">Status:</span>
+                                    <span id="next-launch-status-top" class="text-slate-300 text-xs font-semibold">STANDBY</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Next Launch Section -->
-                    <div class="py-1 px-8 flex items-center gap-4 hidden md:flex">
-                        <div class="flex items-center gap-3">
-                            <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-blue-900/30 text-blue-400 border border-blue-800/50">Next launch</span>
-                            <span id="next-launch-timer-top" class="font-mono text-slate-200 tracking-wider text-sm">--d --h --m --s</span>
-                        </div>
-                        <span class="text-slate-600">-</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-slate-500 text-xs uppercase tracking-wider">Status:</span>
-                            <span id="next-launch-status-top" class="text-slate-300 text-xs font-semibold">STANDBY</span>
-                        </div>
+                    <button id="topbar-toggle" class="topbar-toggle text-slate-400 hover:text-white transition-colors p-1" title="Toggle header info">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    </button>
                 </div>
+                <div class="w-[100px] hidden md:block"></div>
             </nav>
             <div class="w-full h-full grid grid-cols-2">
                 <div></div>
-                <div class="flex-col content-center text-wrap p-16 text-end">
+                <div class="flex-col content-center text-wrap p-16 text-end text-shadow-lg">
                     <h1 class="text-5xl font-bold mb-4">
                         EVERY JOURNEY BEYOND EARTH
                     </h1>
@@ -112,8 +121,13 @@
                     <div class="flex justify-end">
                         <a class="bg-transparent p-3 text-xl flex gap-2 items-center" href="#results">
                             EXPLORE
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                            <!-- Right arrow (desktop) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="explore-arrow-right" viewBox="0 0 16 16">
                                 <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                            </svg>
+                            <!-- Down arrow (mobile) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="explore-arrow-down" viewBox="0 0 16 16">
+                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
                             </svg>
                         </a>
                     </div>
@@ -161,6 +175,20 @@
 
             <!-- Main Results Wrapper -->
             <div class="flex flex-col flex-1 relative bg-transparent">
+                <!-- Mobile Results Header (only shown on mobile via CSS) -->
+                <div class="mobile-results-header">
+                    <h1 id="results_title_mobile">Latest and Upcoming</h1>
+                    <div class="mobile-paginator">
+                        <button id="btn-prev-mobile" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                        <span id="page-indicator-mobile">Total: 0</span>
+                        <button id="btn-next-mobile">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <!-- Desktop Header -->
                 <div class="px-6 py-4 sticky left-[200px] border-y border-slate-800 z-10 w-[calc(100vw-200px)] bg-transparent backdrop-blur-none before:content-[''] before:absolute before:top-[-1px] before:bottom-[-1px] before:-left-[200px] before:w-[100vw] before:border-y before:border-slate-800 before:-z-10">
                     <h1 id="results_title" class="text-1xl font-bold text-slate-300">Latest and Upcoming</h1>
                 </div>
@@ -168,6 +196,26 @@
                 
             </div>
         </div>
+
+        <!-- Mobile Bottom Navigation (only shown on mobile via CSS) -->
+        <nav class="mobile-bottom-nav">
+            <button class="mobile-nav-btn active" id="mob-nav-upcoming">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M17 14h-6"/><path d="M13 18H7"/><path d="M7 14h.01"/><path d="M17 18h.01"/></svg>
+                Upcoming
+            </button>
+            <button class="mobile-nav-btn" id="mob-nav-previous">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                Previous
+            </button>
+            <button class="mobile-nav-btn" id="mob-nav-search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Search
+            </button>
+            <a class="mobile-nav-btn" href="#landing">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Home
+            </a>
+        </nav>
     </div>
 </body>
 </html>
